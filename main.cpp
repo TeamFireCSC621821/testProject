@@ -7,6 +7,12 @@
 #include <vtkRenderWindow.h>
 #include <vtkRenderer.h>
 #include <vtkRenderWindowInteractor.h>
+#include <vtkImageViewer2.h>
+#include <vtkDICOMImageReader.h>
+#include <vtkImageMapper.h>
+#include <vtkImageSliceMapper.h>
+#include <vtkImageSlice.h>
+
 #include <iostream>
 
 using namespace std;
@@ -17,41 +23,31 @@ int main() {
 
     ImageType::Pointer image = ImageType::New();
 
-    // Create a sphere
-    vtkSmartPointer<vtkCylinderSource> cylinderSource =
-            vtkSmartPointer<vtkCylinderSource>::New();
-    cylinderSource->SetCenter(0.0, 0.0, 0.0);
-    cylinderSource->SetRadius(5.0);
-    cylinderSource->SetHeight(7.0);
-    cylinderSource->SetResolution(100);
 
-    // Create a mapper and actor
-    vtkSmartPointer<vtkPolyDataMapper> mapper =
-            vtkSmartPointer<vtkPolyDataMapper>::New();
-    mapper->SetInputConnection(cylinderSource->GetOutputPort());
-    vtkSmartPointer<vtkActor> actor =
-            vtkSmartPointer<vtkActor>::New();
-    actor->SetMapper(mapper);
+    //Demo Display DICOM Image
+    string folder = "/Users/mac/BIOMED/Subjects/testSubject";
+    // Read all the DICOM files in the specified directory.
+    vtkSmartPointer<vtkDICOMImageReader> reader =
+            vtkSmartPointer<vtkDICOMImageReader>::New();
+    reader->SetDirectoryName(folder.c_str());
+    reader->Update();
 
-    //Create a renderer, render window, and interactor
-    vtkSmartPointer<vtkRenderer> renderer =
-            vtkSmartPointer<vtkRenderer>::New();
-    vtkSmartPointer<vtkRenderWindow> renderWindow =
-            vtkSmartPointer<vtkRenderWindow>::New();
-    renderWindow->AddRenderer(renderer);
-    vtkSmartPointer<vtkRenderWindowInteractor> renderWindowInteractor =
-            vtkSmartPointer<vtkRenderWindowInteractor>::New();
-    renderWindowInteractor->SetRenderWindow(renderWindow);
 
-    // Add the actor to the scene
-    renderer->AddActor(actor);
-    renderer->SetBackground(.1, .3,.2); // Background color dark green
+    vtkSmartPointer<vtkImageSliceMapper> imageSliceMapper = vtkSmartPointer<vtkImageSliceMapper>::New();
+    imageSliceMapper->SetInputConnection(reader->GetOutputPort());
+    imageSliceMapper->Update();
 
-    // Render and interact
-    renderWindow->SetWindowName("Fire Team Demo");
-    renderWindow->Render();
+
+    // Visualize
+    vtkSmartPointer<vtkImageViewer2> imageViewer = vtkSmartPointer<vtkImageViewer2>::New();
+    imageViewer->SetInputConnection(reader->GetOutputPort());
+    vtkSmartPointer<vtkRenderWindowInteractor> renderWindowInteractor = vtkSmartPointer<vtkRenderWindowInteractor>::New();
+    imageViewer->SetupInteractor(renderWindowInteractor);
+    imageViewer->Render();
+    imageViewer->GetRenderer()->ResetCamera();
+    imageViewer->Render();
+
     renderWindowInteractor->Start();
 
-    cout << "Hello, World!" << endl;
     return 0;
 }
