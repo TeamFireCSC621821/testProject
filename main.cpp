@@ -198,6 +198,7 @@ int main() {
 
     renderer->ResetCamera();
     volumeMapper->SetRequestedRenderModeToRayCast();
+    volumeMapper->SetBlendModeToMinimumIntensity();
 
     renderWindow->Render();
 
